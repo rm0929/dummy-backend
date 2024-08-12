@@ -1,5 +1,5 @@
-# Backend Practice
+# Backend Practice Project
 
-Hello.. 
+Hello, This is a dummy backend project that I am building for practice javascript.
 
-This is a dummy project that I am building for practice.
+[- model link](https://app.eraser.io/workspace/YtPqZ1VogxGy1jzIDkzj)
