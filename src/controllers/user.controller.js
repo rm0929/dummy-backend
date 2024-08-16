@@ -1,8 +1,8 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
-import { User } from "../models.user.model.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { User } from "../models/user.model.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const registerUser = asyncHandler(async(req, res) => {
     // get user details from frontend
@@ -17,7 +17,7 @@ const registerUser = asyncHandler(async(req, res) => {
 
 
     const { fullName, email, username, password } = req.body
-    console.log("email:", email);
+        //console.log("email:", email);
 
     //validation
     // checking individual conditions one by one
@@ -34,7 +34,7 @@ const registerUser = asyncHandler(async(req, res) => {
 
     // write more validations 
 
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [{ username }, { email }]
     })
 
@@ -44,9 +44,16 @@ const registerUser = asyncHandler(async(req, res) => {
     // const avatarLocalPath = req.files?.avatar[0]?.path;
     // const coverImageLocalPath = req.files?.coverImage[0]?.path;
     // optional chaining not working
+
     // Alternative code
     const avatarLocalPath = req.files && req.files.avatar && req.files.avatar[0] && req.files.avatar[0].path;
-    const coverImageLocalPath = req.files && req.files.coverImage && req.files.coverImage[0] && req.files.coverImage[0].path;
+    //console.log(avatarLocalPath);
+    //const coverImageLocalPath = req.files && req.files.coverImage && req.files.coverImage[0] && req.files.coverImage[0].path;
+
+    let coverImageLocalPath;
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalPath = req.files.coverImage[0].path
+    }
 
     //check avatar local path is recieved or not
     if (!avatarLocalPath) {
@@ -76,7 +83,7 @@ const registerUser = asyncHandler(async(req, res) => {
         "-password -refereshToken" // remove the field that is not required
     )
 
-    if (!createdUser) { //server side error
+    if (!createdUser) { // server side error
         throw new ApiError(500, "Something went wrong while registering the user")
     }
 
