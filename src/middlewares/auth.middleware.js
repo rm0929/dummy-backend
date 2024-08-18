@@ -25,7 +25,6 @@ export const verifyJWT = asyncHandler(async(req, _, next) => { // no response, s
 
 
         if (!user) {
-            // TODO: frontend discussion
             throw new ApiError(401, "Invalid Access Token")
         }
 
