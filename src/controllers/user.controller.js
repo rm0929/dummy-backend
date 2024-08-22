@@ -276,7 +276,11 @@ const changeCurrentPassword = asyncHandler(async(req, res) => {
 const getCurrentUser = asyncHandler(async(req, res) => {
     return res
         .status(200)
-        .json(200, req.user, "current user fetched successfully")
+        .json(new ApiResponse(
+            200,
+            req.user,
+            "current user fetched successfully"
+        ))
 })
 
 // update the account details
@@ -288,7 +292,7 @@ const updateAccountDetails = asyncHandler(async(req, res) => {
         throw new ApiError(400, "All fields are required")
     }
 
-    const user = User.findByIdAndUpdat(
+    const user = await User.findByIdAndUpdate(
         req.user && req.user._id, {
             $set: {
                 fullName,
@@ -360,6 +364,55 @@ const updateUserCoverimage = asyncHandler(async(req, res) => {
         )
 })
 
+// get user watch history
+const getWatchHistory = asyncHandler(async(req, res) => {
+    const user = await User.aggregate([{
+            $match: {
+                _id: new mongoose.Types.ObjectId(req.user._id)
+            }
+        },
+        {
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                pipeline: [{
+                    $lookup: {
+                        from: "users",
+                        localField: "owner",
+                        foreignField: "_id",
+                        as: "owner",
+                        pipeline: [{
+                            $projects: {
+                                fullName: 1,
+                                username: 1,
+                                avatar: 1
+                            }
+
+                        }]
+                    }
+                }, {
+                    $addFields: {
+                        owner: {
+                            $first: "owner"
+                        }
+                    }
+                }]
+            }
+        }
+    ])
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                user[0].watchHistory, "Watch history fetched successfully"
+            )
+        )
+})
+
 export {
     registerUser,
     loginUser,
@@ -369,5 +422,6 @@ export {
     getCurrentUser,
     updateAccountDetails,
     updateUserAvatar,
-    updateUserCoverimage
+    updateUserCoverimage,
+    getWatchHistory
 }
